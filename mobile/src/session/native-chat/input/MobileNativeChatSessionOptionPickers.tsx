@@ -49,7 +49,9 @@ import { sortNativeChatSessionOptions } from '../../../../../src/shared/native-c
 import {
   AGENT_CHAT_PERMISSION_MODE_ICON_NAMES,
   AGENT_CHAT_PERMISSION_MODE_OPTION_ID,
-  isAgentChatPermissionMode
+  chatPermissionModeWarns,
+  isAgentChatPermissionMode,
+  type AgentChatPermissionChoice
 } from '../../../../../src/shared/agent-chat-permission-mode'
 import type { MobileNativeChatSessionOptionsController } from './use-mobile-native-chat-session-options'
 import { sessionOptionPickerStyles as styles } from './mobile-native-chat-session-option-picker-styles'
@@ -62,6 +64,8 @@ export type MobileNativeChatSessionOptionPickersProps = {
   isWorking: boolean
   // Block applies during composer send: the host’s body/Enter delay could submit the setting as prompt text.
   sendInFlight?: boolean
+  /** The host's new-chat permission; the pill does not warn about the mode the user chose as default. */
+  permissionDefault?: AgentChatPermissionChoice | null
 }
 
 type PresentationProps = {
@@ -73,6 +77,13 @@ type PresentationProps = {
 
 function permissionChoiceColor(value: string | undefined): string | undefined {
   return value === 'full-access' ? colors.statusAmber : undefined
+}
+
+function permissionPillColor(
+  value: string | undefined,
+  permissionDefault: AgentChatPermissionChoice | null | undefined
+): string | undefined {
+  return chatPermissionModeWarns(value, permissionDefault) ? colors.statusAmber : undefined
 }
 
 function permissionModeIcon(value: string): LucideIcon | undefined {
@@ -101,6 +112,7 @@ export function MobileNativeChatSessionOptionPickers({
   controller,
   isWorking,
   sendInFlight = false,
+  permissionDefault,
   presentation,
   onNavigate,
   onDrawerOpen,
@@ -149,7 +161,7 @@ export function MobileNativeChatSessionOptionPickers({
   const locked = isWorking || busy
   const reason = nativeChatSessionOptionDisabledReason(activeDescriptor?.disabledReason, say)
   const permissionChoice = selectedChoice(permission)
-  const permissionColor = permissionChoiceColor(permissionChoice?.value)
+  const permissionColor = permissionPillColor(permissionChoice?.value, permissionDefault)
   const permissionIcon =
     !model && permissionChoice ? permissionModeIcon(permissionChoice.value) : undefined
   const segmentOptions = options.filter(showsSessionOptionAsSegments)
@@ -197,7 +209,7 @@ export function MobileNativeChatSessionOptionPickers({
         icon={permissionIcon}
         accessibleName={
           model
-            ? `Model, ${secondary ? `${primary} ${secondary}` : primary}${permissionColor ? ', full access' : ''}`
+            ? `Model, ${secondary ? `${primary} ${secondary}` : primary}${permissionChoice?.value === 'full-access' ? ', full access' : ''}`
             : `Permissions, ${primary}`
         }
         disabled={busy || (!model && permission?.settable === false)}

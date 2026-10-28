@@ -13,6 +13,7 @@ import { translate } from '@/i18n/i18n'
 import { useAppStore } from '@/store'
 import {
   AGENT_CHAT_PERMISSION_MODE_OPTION_ID,
+  chatPermissionModeWarns,
   isAgentChatPermissionMode,
   newChatPermissionModeForSettings,
   type AgentChatPermissionChoice,
@@ -127,7 +128,7 @@ function NativeChatPermissionModePickerInner({
                 <NativeChatPermissionModeName
                   mode={current}
                   truncate
-                  quiet={current === defaultMode}
+                  quiet={!chatPermissionModeWarns(current, defaultMode)}
                 />
               ) : (
                 <>
@@ -171,9 +172,7 @@ export function NativeChatComposerPermissionPicker({
   snapshot: readonly SessionOptionDescriptor[]
   agent?: string
 }): React.JSX.Element | null {
-  const defaultMode = useAppStore((state) =>
-    agent ? newChatPermissionModeForSettings(agent, state.settings) : null
-  )
+  const settings = useAppStore((state) => state.settings)
   const descriptor = snapshot.find((entry) => entry.id === AGENT_CHAT_PERMISSION_MODE_OPTION_ID)
   const current = descriptor?.kind.type === 'select' ? descriptor.kind.currentValue : undefined
   if (!surface || !descriptor || descriptor.kind.type !== 'select') {
@@ -191,7 +190,7 @@ export function NativeChatComposerPermissionPicker({
       modes={modes}
       currentLabel={descriptor.description}
       agent={agent ?? null}
-      defaultMode={defaultMode}
+      defaultMode={agent ? newChatPermissionModeForSettings(agent, settings) : null}
       disabled={!descriptor.settable}
       onSelect={(mode) => {
         // The report can match a new explicit pick while the chat still follows agent settings.

@@ -4,7 +4,10 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import type { AgentChatPermissionChoice } from '../../../../shared/agent-chat-permission-mode'
 
-const store = vi.hoisted(() => ({ settings: { nativeChatPermissionMode: 'ask' } }))
+const store = vi.hoisted(() => {
+  const settings: Record<string, unknown> = { nativeChatPermissionMode: 'ask' }
+  return { settings }
+})
 vi.mock('@/store', () => ({
   useAppStore: <T,>(select: (state: typeof store) => T): T => select(store)
 }))
@@ -283,12 +286,26 @@ describe('NativeChatComposerPermissionPicker', () => {
   )
 
   it.each([
-    ['ask', true],
-    ['full-access', false]
-  ])('with a %s default, warns about Full access on the pill: %s', (defaultMode, warns) => {
-    store.settings.nativeChatPermissionMode = defaultMode
+    ['legacy Ask', { nativeChatPermissionMode: 'ask' }, true],
+    ['legacy Full access', { nativeChatPermissionMode: 'full-access' }, false],
+    [
+      'Agent Permissions Full access',
+      { nativeChatPermissionMode: 'ask', agentPermissionDefault: 'full-access' },
+      false
+    ],
+    [
+      'Codex Ask override',
+      {
+        agentPermissionDefault: 'full-access',
+        agentPermissionOverrides: { codex: 'ask' }
+      },
+      true
+    ]
+  ])('with a %s default, warns about Full access on the pill: %s', (_name, settings, warns) => {
+    const previous = store.settings
+    store.settings = settings
     onTestFinished(() => {
-      store.settings.nativeChatPermissionMode = 'ask'
+      store.settings = previous
     })
     render(
       <NativeChatComposerPermissionPicker
