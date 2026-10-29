@@ -370,9 +370,9 @@ describe('MobileNativeChatSessionOptionPickers', () => {
         false,
         defaultMode
       )
-      expect(
-        renderer!.root.find((node) => typeof node.props.warning === 'boolean').props.warning
-      ).toBe(warns)
+      expect(findByHostType(renderer!.root, 'ShieldAlert').props.color).toBe(
+        warns ? colors.statusAmber : colors.textSecondary
+      )
       expect(pill('Model').props.accessibilityLabel).toBe('Model, Sonnet 5, full access')
     }
   )

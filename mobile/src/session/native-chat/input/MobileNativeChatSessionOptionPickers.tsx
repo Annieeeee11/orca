@@ -167,6 +167,7 @@ export function MobileNativeChatSessionOptionPickers({
   const locked = isWorking || busy
   const reason = nativeChatSessionOptionDisabledReason(activeDescriptor?.disabledReason, say)
   const permissionChoice = selectedChoice(permission)
+  const fullAccess = permissionChoice?.value === 'full-access'
   const permissionColor = permissionPillColor(permissionChoice?.value, permissionDefault)
   const permissionIcon =
     !model && permissionChoice ? permissionModeIcon(permissionChoice.value) : undefined
@@ -212,10 +213,11 @@ export function MobileNativeChatSessionOptionPickers({
         primary={primary}
         secondary={secondary}
         warning={permissionColor !== undefined}
+        fullAccess={fullAccess}
         icon={permissionIcon}
         accessibleName={
           model
-            ? permissionChoice?.value === 'full-access'
+            ? fullAccess
               ? t(
                   'chat.sessionOptionPickers.modelFullAccessLabel',
                   'Model, {{value}}, full access',
