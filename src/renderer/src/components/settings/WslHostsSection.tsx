@@ -31,6 +31,7 @@ import {
   getWslHostsPausedLabel,
   getWslHostsTurnedOffLabel
 } from '../sidebar/wsl-host-row-status'
+import { wslHostStatusDetailMessage } from '../sidebar/wsl-host-failure-text'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import { DropdownMenuItem } from '../ui/dropdown-menu'
@@ -44,6 +45,7 @@ import {
 } from '../wsl-move/wsl-move-orchestrator-status'
 import { openWslMoveDialogFor } from '../wsl-move/wsl-move-entry'
 import { WslMoveUnfinishedNotice } from '../wsl-move/WslMoveUnfinishedNotice'
+import { readIpcErrorDetail } from '@/lib/ipc-error'
 
 function getWslHostRowStatus(
   status: WslHostStatus | undefined,
@@ -118,7 +120,8 @@ export function WslHostsSection({
       await api.connect({ environmentId, ...(intent ? { intent } : {}) })
       onChanged()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : String(error))
+      // The main process's message is for the user; Electron's wrapper and the class name aren't.
+      toast.error(readIpcErrorDetail(error) ?? String(error))
     } finally {
       setConnectingId(null)
     }
@@ -198,7 +201,9 @@ export function WslHostsSection({
                           { version: deferred.candidateVersion }
                         )} ${managedServerOutcomeLabel({ outcome: 'deferred', code: deferred.code })}`
                       : `${unavailableLabel ?? getWslHostRowDetail(status)}${
-                          !unavailableLabel && status?.detail ? ` — ${status.detail}` : ''
+                          !unavailableLabel && status?.detail
+                            ? ` — ${wslHostStatusDetailMessage(status)}`
+                            : ''
                         }`}
                   </span>
                 }

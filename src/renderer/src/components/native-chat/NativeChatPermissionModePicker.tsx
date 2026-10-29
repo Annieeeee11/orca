@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { translate } from '@/i18n/i18n'
+import { useUiLanguageRevision } from '@/i18n/use-ui-language-revision'
 import { useAppStore } from '@/store'
 import {
   AGENT_CHAT_PERMISSION_MODE_OPTION_ID,
@@ -103,6 +104,7 @@ function NativeChatPermissionModePickerInner({
   currentLabel,
   defaultMode
 }: NativeChatPermissionModePickerProps): React.JSX.Element {
+  useUiLanguageRevision()
   const title = nativeChatPermissionPickerTitle()
   const label = isAgentChatPermissionMode(current)
     ? nativeChatPermissionModeLabel(current)
